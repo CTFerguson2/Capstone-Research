@@ -1,0 +1,31 @@
+# Build output
+build/
+out/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# vcpkg manifest installs dependencies here
+vcpkg_installed/
+
+# Visual Studio / VS Code local files
+.vs/
+.vscode/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+
+# Compiled binaries / libraries
+*.exe
+*.dll
+*.lib
+*.obj
+*.pdb
+*.ilk
+
+# OS junk
+.DS_Store
+Thumbs.db
