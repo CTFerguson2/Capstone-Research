@@ -100,11 +100,37 @@ void App::drawCanvasPanel() {
     float canvasX = (mouse.x - imageTopLeft.x) / canvasZoom;
     float canvasY = (mouse.y - imageTopLeft.y) / canvasZoom;
 
+
     bool mouseOverCanvas =
         canvasX >= 0.0f &&
         canvasY >= 0.0f &&
         canvasX < static_cast<float>(canvasSize.x) &&
         canvasY < static_cast<float>(canvasSize.y);
+
+     sf::Vector2u canvasPoint(
+        static_cast<unsigned int>(canvasX),
+        static_cast<unsigned int>(canvasY)
+    );
+    // Use tools
+    // Eyedropper
+    if (
+        canvasActive &&
+        mouseOverCanvas &&
+        ImGui::IsMouseClicked(ImGuiMouseButton_Left) &&
+        tools.current == Tool::Eyedropper
+    ) {
+        tools.brushColor = canvas.pickColor(canvasPoint);
+    } 
+    //Fill
+    if (
+        canvasActive &&
+        mouseOverCanvas &&
+        ImGui::IsMouseClicked(ImGuiMouseButton_Left) &&
+        tools.current == Tool::FillBucket
+    ) {
+        canvas.fill(canvasPoint, tools.brushColor);
+    }
+    // Draw/Erase
     if ((tools.current == Tool::Brush || tools.current == Tool::Eraser) && canvasActive && mouseOverCanvas && ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
         sf::Vector2f currentCanvasPoint(canvasX, canvasY);
 
@@ -123,6 +149,7 @@ void App::drawCanvasPanel() {
         lastCanvasPoint = currentCanvasPoint;
     } else {
         isDrawing = false;
+       
     }
     ImGui::EndChild();
 
