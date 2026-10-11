@@ -1,3 +1,7 @@
+#pragma once
+
+#include <SFML/Graphics.hpp>
+
 class SketchCanvas {
 public:
     SketchCanvas(unsigned int width, unsigned int height);
@@ -6,23 +10,13 @@ public:
     void erase(sf::Vector2f from, sf::Vector2f to, float radius);
     void clear();
 
-    sf::Color pickColor(sf::Vector2u point) const;
-    void fill(sf::Vector2u point, sf::Color color);
-
-    void undo();
-    void redo();
-
-    bool exportPng(const std::filesystem::path& path) const;
-
     const sf::Texture& getTexture() const;
     sf::Vector2u getSize() const;
+    const sf::RenderTexture& getRenderTexture() const;
 
 private:
-    sf::RenderTexture canvas;
-    sf::Color background = sf::Color::White;
+    void drawStroke(sf::Vector2f from, sf::Vector2f to, float radius, sf::Color color);
 
-    std::vector<sf::Image> undoStack;
-    std::vector<sf::Image> redoStack;
-
-    void saveUndoSnapshot();
+    sf::RenderTexture renderTexture;
+    sf::Color backgroundColor = sf::Color::White;
 };

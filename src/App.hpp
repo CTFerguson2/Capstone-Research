@@ -4,6 +4,7 @@
 #include <imgui-SFML.h>
 #include "SketchCanvas.hpp"
 #include "Tool.hpp"
+#include "UI.hpp"
 
 namespace Constants{
     inline constexpr const sf::Vector2u WINDOW_DIM = {1000, 700};
@@ -24,8 +25,17 @@ private:
     void update();
     void render();
 
+    void drawCanvasPanel(); 
+
     sf::RenderWindow window;
     sf::Clock deltaClock;
-    // SketchCanvas canvas;
-    // ToolState tools;
+
+    SketchCanvas canvas;
+    ToolState tools;
+    UI ui;
+    
+    float canvasZoom = 1.0f;
+
+    bool isDrawing = false;
+    sf::Vector2f lastCanvasPoint{};
 };

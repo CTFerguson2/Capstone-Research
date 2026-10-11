@@ -2,29 +2,16 @@
 #include <algorithm>
 #include <cstdint>
 #include <iostream>
-namespace {
-sf::Color colorFromFloats(const float color[4]) {
-    return sf::Color(
-        static_cast<std::uint8_t>(std::clamp(color[0], 0.0f, 1.0f) * 255.0f),
-        static_cast<std::uint8_t>(std::clamp(color[1], 0.0f, 1.0f) * 255.0f),
-        static_cast<std::uint8_t>(std::clamp(color[2], 0.0f, 1.0f) * 255.0f),
-        static_cast<std::uint8_t>(std::clamp(color[3], 0.0f, 1.0f) * 255.0f)
-    );
-}
-}
+#include "UI.hpp"
 
 App::App()
     : window(sf::VideoMode(Constants::WINDOW_DIM), "Capstone Research"),
-    deltaClock(){
+    deltaClock(), canvas(500, 500), tools(), ui() {
         window.setFramerateLimit(60);
         if(!ImGui::SFML::Init(window)){
             std::cerr << "Failed to initialize ImGui";
         };
     }
-//       canvas(800u, 600u) {
-//     window.setFramerateLimit(60);
-//     ImGui::SFML::Init(window);
-// }
 
 App::~App(){
     ImGui::SFML::Shutdown();
@@ -55,9 +42,91 @@ void App::update(){
 
 void App::render(){
     window.clear(Constants::BG_COLOR);
+
+    ui.drawToolPanel(tools, canvasZoom);
+    drawCanvasPanel();
     ImGui::SFML::Render(window);
     window.display();
 }
 
+void App::drawCanvasPanel() {
+    ImGui::Begin("Canvas");
+
+    ImGui::BeginChild(
+        "CanvasView",
+        ImVec2(0, 0),
+        true,
+        ImGuiWindowFlags_HorizontalScrollbar
+    );
+
+    sf::Vector2u canvasSize = canvas.getSize();
+
+    sf::Vector2f displaySize(
+        static_cast<float>(canvasSize.x) * canvasZoom,
+        static_cast<float>(canvasSize.y) * canvasZoom
+    );
+    ImVec2 displaySizeImGui(displaySize.x, displaySize.y);
+
+    ImVec2 available = ImGui::GetContentRegionAvail();
+
+    float offsetX = std::max((available.x - displaySize.x) * 0.5f, 0.0f);
+    float offsetY = std::max((available.y - displaySize.y) * 0.5f, 0.0f);
+
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offsetX);
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offsetY);
+
+    ImVec2 imageTopLeft = ImGui::GetCursorScreenPos();
+
+    ImGui::Image(canvas.getRenderTexture(), displaySize);
+
+    ImVec2 imageBottomRight = ImGui::GetItemRectMax();
+
+    ImGui::SetCursorScreenPos(imageTopLeft);
+
+    ImGui::InvisibleButton(
+        "canvas_input",
+        displaySizeImGui,
+        ImGuiButtonFlags_MouseButtonLeft
+    );
+
+    bool canvasHovered = ImGui::IsItemHovered();
+    bool canvasActive = ImGui::IsItemActive();
+
+    ImGui::SetCursorScreenPos(imageBottomRight);
+
+    ImGuiIO& io = ImGui::GetIO();
+    ImVec2 mouse = io.MousePos;
+
+    float canvasX = (mouse.x - imageTopLeft.x) / canvasZoom;
+    float canvasY = (mouse.y - imageTopLeft.y) / canvasZoom;
+
+    bool mouseOverCanvas =
+        canvasX >= 0.0f &&
+        canvasY >= 0.0f &&
+        canvasX < static_cast<float>(canvasSize.x) &&
+        canvasY < static_cast<float>(canvasSize.y);
+    if ((tools.current == Tool::Brush || tools.current == Tool::Eraser) && canvasActive && mouseOverCanvas && ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+        sf::Vector2f currentCanvasPoint(canvasX, canvasY);
+
+        if (!isDrawing) {
+            isDrawing = true;
+            lastCanvasPoint = currentCanvasPoint;
+        }
+
+        canvas.drawBrush(
+            lastCanvasPoint,
+            currentCanvasPoint,
+            tools.current == Tool::Brush ? tools.brushSize : tools.eraserSize,
+            tools.current == Tool::Brush ? tools.brushColor : sf::Color::White
+        );
+
+        lastCanvasPoint = currentCanvasPoint;
+    } else {
+        isDrawing = false;
+    }
+    ImGui::EndChild();
+
+    ImGui::End();
+}
 
 
