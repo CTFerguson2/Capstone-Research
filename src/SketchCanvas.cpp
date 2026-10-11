@@ -99,6 +99,11 @@ void SketchCanvas::clear() {
     renderTexture.display();
 }
 
+bool SketchCanvas::exportPng(const std::filesystem::path& path) const {
+    sf::Image image = renderTexture.getTexture().copyToImage();
+    return image.saveToFile(path);
+}
+
 const sf::Texture& SketchCanvas::getTexture() const {
     return renderTexture.getTexture();
 }

@@ -1,12 +1,13 @@
 #pragma once
+
 #include "Tool.hpp"
 
-namespace Constants {
-    
-}
+struct UIActions {
+    bool exportPng = false;
+};
 
-class UI{
+class UI {
     public:
-        UI();
-        void drawToolPanel(ToolState& tools, float& canvasZoom);
+    UI();
+    UIActions drawToolPanel(ToolState& tools, float& canvasZoom);
 };

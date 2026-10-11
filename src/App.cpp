@@ -43,7 +43,15 @@ void App::update(){
 void App::render(){
     window.clear(Constants::BG_COLOR);
 
-    ui.drawToolPanel(tools, canvasZoom);
+     UIActions actions = ui.drawToolPanel(tools, canvasZoom);
+
+    if (actions.exportPng) {
+        if( canvas.exportPng("drawing.png"))
+            std::cout << "Drawing saved!" << std::endl;
+        else
+            std::cout << "Epic fail :(" << std::endl;
+        
+    }
     drawCanvasPanel();
     ImGui::SFML::Render(window);
     window.display();

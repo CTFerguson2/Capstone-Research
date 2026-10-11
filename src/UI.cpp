@@ -28,7 +28,8 @@ void toolButton(const char* label, Tool tool, ToolState& tools) {
 }
 }
 
-void UI::drawToolPanel(ToolState& tools, float& canvasZoom) {
+UIActions UI::drawToolPanel(ToolState& tools, float& canvasZoom) {
+    UIActions actions;
     ImGui::Begin("Tools");
 
     toolButton("Brush", Tool::Brush, tools);
@@ -65,6 +66,11 @@ void UI::drawToolPanel(ToolState& tools, float& canvasZoom) {
     if (ImGui::Button("100%")) {
         canvasZoom = 1.0f;
     }
+    if (ImGui::Button("Export PNG")) {
+        actions.exportPng = true;
+    }
 
     ImGui::End();
+
+    return actions;
 }
