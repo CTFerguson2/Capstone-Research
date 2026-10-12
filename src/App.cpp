@@ -6,12 +6,17 @@
 
 App::App()
     : window(sf::VideoMode(Constants::WINDOW_DIM), "Capstone Research"),
-    deltaClock(), canvas(500, 500), tools(), ui() {
+    deltaClock(), canvas(nullptr), tools(), ui() {
         window.setFramerateLimit(60);
         if(!ImGui::SFML::Init(window)){
             std::cerr << "Failed to initialize ImGui";
         };
-    
+
+        canvas = std::make_unique<SketchCanvas>(500, 500);
+
+        if(window.setActive(true))
+            ;
+        deltaClock.restart();
     }
 
 App::~App(){
@@ -38,6 +43,10 @@ void App::processEvents() {
             isDrawing = false;
         }
 
+        if (event->is<sf::Event::FocusGained>()) {
+            deltaClock.restart();
+        }
+
         if (const auto* resized = event->getIf<sf::Event::Resized>()) {
             sf::FloatRect visibleArea(
                 {0.0f, 0.0f},
@@ -51,6 +60,7 @@ void App::processEvents() {
         }
     }
 }
+
 void App::update(){
     ImGui::SFML::Update(window, deltaClock.restart());
 }
@@ -61,7 +71,7 @@ void App::render(){
      UIActions actions = ui.drawToolPanel(tools, canvasZoom);
 
     if (actions.exportPng) {
-        canvas.exportPng("drawing.png");
+        canvas->exportPng("drawing.png");
     }
 
     drawCanvasPanel();
@@ -79,7 +89,7 @@ void App::drawCanvasPanel() {
         ImGuiWindowFlags_HorizontalScrollbar
     );
 
-    sf::Vector2u canvasSize = canvas.getSize();
+    sf::Vector2u canvasSize = canvas->getSize();
 
     sf::Vector2f displaySize(
         static_cast<float>(canvasSize.x) * canvasZoom,
@@ -97,7 +107,7 @@ void App::drawCanvasPanel() {
 
     ImVec2 imageTopLeft = ImGui::GetCursorScreenPos();
 
-    ImGui::Image(canvas.getRenderTexture(), displaySize);
+    ImGui::Image(canvas->getRenderTexture(), displaySize);
 
     ImVec2 imageBottomRight = ImGui::GetItemRectMax();
 
@@ -139,7 +149,7 @@ void App::drawCanvasPanel() {
         ImGui::IsMouseClicked(ImGuiMouseButton_Left) &&
         tools.current == Tool::Eyedropper
     ) {
-        tools.brushColor = canvas.pickColor(canvasPoint);
+        tools.brushColor = canvas->pickColor(canvasPoint);
     } 
     //Fill
     if (
@@ -148,7 +158,7 @@ void App::drawCanvasPanel() {
         ImGui::IsMouseClicked(ImGuiMouseButton_Left) &&
         tools.current == Tool::FillBucket
     ) {
-        canvas.fill(canvasPoint, tools.brushColor);
+        canvas->fill(canvasPoint, tools.brushColor);
     }
     // Draw/Erase
     if ((tools.current == Tool::Brush || tools.current == Tool::Eraser) && canvasActive && mouseOverCanvas && ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
@@ -159,7 +169,7 @@ void App::drawCanvasPanel() {
             lastCanvasPoint = currentCanvasPoint;
         }
 
-        canvas.drawBrush(
+        canvas->drawBrush(
             lastCanvasPoint,
             currentCanvasPoint,
             tools.current == Tool::Brush ? tools.brushSize : tools.eraserSize,

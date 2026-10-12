@@ -5,6 +5,7 @@
 #include "SketchCanvas.hpp"
 #include "Tool.hpp"
 #include "UI.hpp"
+#include <memory>
 
 namespace Constants{
     inline constexpr const sf::Vector2u WINDOW_DIM = {1000, 700};
@@ -30,7 +31,7 @@ private:
     sf::RenderWindow window;
     sf::Clock deltaClock;
 
-    SketchCanvas canvas;
+    std::unique_ptr<SketchCanvas> canvas;
     ToolState tools;
     UI ui;
     
