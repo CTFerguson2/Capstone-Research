@@ -11,6 +11,7 @@ App::App()
         if(!ImGui::SFML::Init(window)){
             std::cerr << "Failed to initialize ImGui";
         };
+    
     }
 
 App::~App(){
@@ -25,17 +26,31 @@ void App::run(){
     }
 }
 
-
-void App::processEvents(){
-    while(const std::optional event = window.pollEvent())
-    {
+void App::processEvents() {
+    while (const std::optional event = window.pollEvent()) {
         ImGui::SFML::ProcessEvent(window, *event);
-        
-        if(event -> is<sf::Event::Closed>())
+
+        if (event->is<sf::Event::Closed>()) {
             window.close();
+        }
+
+        if (event->is<sf::Event::FocusLost>()) {
+            isDrawing = false;
+        }
+
+        if (const auto* resized = event->getIf<sf::Event::Resized>()) {
+            sf::FloatRect visibleArea(
+                {0.0f, 0.0f},
+                {
+                    static_cast<float>(resized->size.x),
+                    static_cast<float>(resized->size.y)
+                }
+            );
+
+            window.setView(sf::View(visibleArea));
+        }
     }
 }
-
 void App::update(){
     ImGui::SFML::Update(window, deltaClock.restart());
 }
@@ -46,12 +61,9 @@ void App::render(){
      UIActions actions = ui.drawToolPanel(tools, canvasZoom);
 
     if (actions.exportPng) {
-        if( canvas.exportPng("drawing.png"))
-            std::cout << "Drawing saved!" << std::endl;
-        else
-            std::cout << "Epic fail :(" << std::endl;
-        
+        canvas.exportPng("drawing.png");
     }
+
     drawCanvasPanel();
     ImGui::SFML::Render(window);
     window.display();

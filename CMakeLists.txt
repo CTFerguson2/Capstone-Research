@@ -9,8 +9,7 @@ add_executable(capstone-research
     src/main.cpp
     src/App.cpp
     src/SketchCanvas.cpp
-    src/Tool.cpp
-    src/History.cpp
+    src/Tool.hpp
     src/UI.cpp
 )
 
